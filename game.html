@@ -26,6 +26,8 @@
       // Game variables
       let score = 0;
       let isGameOver = false;
+      const timeLimit = 60000;
+      let startTime; // Variable to store the start time
 
       // Game variables
       let aircraftX = 50; // X-coordinate of the aircraft
@@ -35,7 +37,7 @@
       let leftPressed = false;
       let upPressed = false;
       let downPressed = false;
-      let spacePressed = false;
+      // let spacePressed = false;
 
       let createEnemyInterval;
       let moveEnemyAndBulletInterval;
@@ -44,6 +46,16 @@
       // Event listeners for player controls
       document.addEventListener("keydown", keyDownHandler);
       document.addEventListener("keyup", keyUpHandler);
+
+      // Event listeners for keydown and click
+      document.addEventListener("keydown", handleKeyDown);
+
+      // Handle keydown event
+      function handleKeyDown(event) {
+        if (event.code === "Space") {
+          fireBullet();
+        }
+      }
 
       function keyDownHandler(event) {
         if (event.key === "Right" || event.key === "ArrowRight") {
@@ -54,9 +66,10 @@
           upPressed = true;
         } else if (event.key === "Down" || event.key === "ArrowDown") {
           downPressed = true;
-        } else if (event.key === " ") {
-          spacePressed = true;
         }
+        // else if (event.key === " ") {
+        //   spacePressed = true;
+        // }
       }
 
       function keyUpHandler(event) {
@@ -68,9 +81,31 @@
           upPressed = false;
         } else if (event.key === "Down" || event.key === "ArrowDown") {
           downPressed = false;
-        } else if (event.key === " ") {
-          spacePressed = false;
         }
+        // else if (event.key === " ") {
+        //   spacePressed = false;
+        // }
+      }
+
+      // Start the game timer
+      function startTimer() {
+        startTime = Date.now(); // Record the start time
+        setTimeout(gameOver, timeLimit);
+      }
+
+      // Calculate remaining time
+      function calculateRemainingTime() {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, timeLimit - elapsed);
+        return Math.ceil(remaining / 1000); // Convert to seconds and round up
+      }
+
+      // Draw remaining time
+      function drawTime() {
+        const remainingTime = calculateRemainingTime();
+        ctx.font = "20px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText("Time: " + remainingTime + "s", canvas.width - 100, 20);
       }
 
       // Update score
@@ -119,12 +154,15 @@
           aircraftY += 5;
         }
         // Fire bullets
-        if (spacePressed) {
-          fireBullet();
-        }
+        // if (spacePressed) {
+        //   fireBullet();
+        // }
 
         // draw score
         drawScore();
+
+        // Draw remaining time
+        drawTime();
 
         // Request the next frame
         requestAnimationFrame(draw);
@@ -228,8 +266,11 @@
         console.log("Game Over");
       }
 
-      // Start the game loop
-      draw();
+      // Start the game
+      function startGame() {
+        startTimer();
+        draw();
+      }
 
       // Enemy and bullet creation interval
       createEnemyInterval = setInterval(() => {
@@ -256,6 +297,9 @@
           gameOver();
         }
       }, 100);
+
+      // Start the game loop
+      startGame();
     </script>
   </body>
 </html>
