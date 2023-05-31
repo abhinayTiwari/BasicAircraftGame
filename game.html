@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Aircraft Game</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+        background: #f1f1f1;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <script>
+      // Create reload button
+      const reloadButton = document.createElement("button");
+      reloadButton.innerText = "Reload";
+      reloadButton.addEventListener("click", reloadGame);
+      document.body.appendChild(reloadButton);
+
+      // Get the canvas element
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+
+      // Game variables
+      let score = 0;
+      let isGameOver = false;
+
+      // Game variables
+      let aircraftX = 50; // X-coordinate of the aircraft
+      let aircraftY = canvas.height / 2; // Y-coordinate of the aircraft
+
+      let rightPressed = false;
+      let leftPressed = false;
+      let upPressed = false;
+      let downPressed = false;
+      let spacePressed = false;
+
+      let createEnemyInterval;
+      let moveEnemyAndBulletInterval;
+      let checkCollisionInterval;
+
+      // Event listeners for player controls
+      document.addEventListener("keydown", keyDownHandler);
+      document.addEventListener("keyup", keyUpHandler);
+
+      function keyDownHandler(event) {
+        if (event.key === "Right" || event.key === "ArrowRight") {
+          rightPressed = true;
+        } else if (event.key === "Left" || event.key === "ArrowLeft") {
+          leftPressed = true;
+        } else if (event.key === "Up" || event.key === "ArrowUp") {
+          upPressed = true;
+        } else if (event.key === "Down" || event.key === "ArrowDown") {
+          downPressed = true;
+        } else if (event.key === " ") {
+          spacePressed = true;
+        }
+      }
+
+      function keyUpHandler(event) {
+        if (event.key === "Right" || event.key === "ArrowRight") {
+          rightPressed = false;
+        } else if (event.key === "Left" || event.key === "ArrowLeft") {
+          leftPressed = false;
+        } else if (event.key === "Up" || event.key === "ArrowUp") {
+          upPressed = false;
+        } else if (event.key === "Down" || event.key === "ArrowDown") {
+          downPressed = false;
+        } else if (event.key === " ") {
+          spacePressed = false;
+        }
+      }
+
+      // Update score
+      function updateScore() {
+        score++;
+      }
+
+      // Draw score
+      function drawScore() {
+        ctx.font = "16px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText("Score: " + score, 10, 20);
+      }
+
+      // Reload button click event handler
+      function reloadGame() {
+        location.reload();
+      }
+
+      // Game loop
+      function draw() {
+        if (isGameOver) {
+          return;
+        }
+
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the aircraft
+        ctx.fillStyle = "red";
+        ctx.fillRect(aircraftX, aircraftY, 50, 50);
+
+        drawEnemies();
+        drawBullets();
+
+        // Move the aircraft
+        if (rightPressed && aircraftX < canvas.width - 50) {
+          aircraftX += 5;
+        } else if (leftPressed && aircraftX > 0) {
+          aircraftX -= 5;
+        }
+
+        if (upPressed && aircraftY > 0) {
+          aircraftY -= 5;
+        } else if (downPressed && aircraftY < canvas.height - 50) {
+          aircraftY += 5;
+        }
+        // Fire bullets
+        if (spacePressed) {
+          fireBullet();
+        }
+
+        // draw score
+        drawScore();
+
+        // Request the next frame
+        requestAnimationFrame(draw);
+      }
+
+      // Bullets
+      const bullets = [];
+
+      function fireBullet() {
+        const bullet = {
+          x: aircraftX + 25,
+          y: aircraftY,
+          width: 5,
+          height: 10,
+          speed: 5,
+        };
+
+        bullets.push(bullet);
+      }
+
+      function moveBullets() {
+        bullets.forEach((bullet) => {
+          bullet.y -= bullet.speed;
+        });
+      }
+
+      function drawBullets() {
+        bullets.forEach((bullet) => {
+          ctx.fillStyle = "blue";
+          ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        });
+      }
+
+      // Enemy aircrafts
+      const enemies = [];
+
+      function createEnemy() {
+        const enemy = {
+          x: canvas.width,
+          y: Math.random() * (canvas.height - 50),
+          width: 50,
+          height: 50,
+          speed: Math.random() * 2 + 1,
+        };
+
+        enemies.push(enemy);
+      }
+
+      function moveEnemies() {
+        enemies.forEach((enemy) => {
+          enemy.x -= enemy.speed;
+        });
+      }
+
+      function drawEnemies() {
+        enemies.forEach((enemy) => {
+          ctx.fillStyle = "green";
+          ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        });
+      }
+
+      function checkCollision(bullet, enemy) {
+        if (
+          bullet.x < enemy.x + enemy.width &&
+          bullet.x + bullet.width > enemy.x &&
+          bullet.y < enemy.y + enemy.height &&
+          bullet.y + bullet.height > enemy.y
+        ) {
+          updateScore();
+          return true;
+        }
+        return false;
+      }
+
+      function checkCollisions() {
+        bullets.forEach((bullet, bulletIndex) => {
+          enemies.forEach((enemy, enemyIndex) => {
+            if (checkCollision(bullet, enemy)) {
+              bullets.splice(bulletIndex, 1);
+              enemies.splice(enemyIndex, 1);
+            }
+          });
+        });
+      }
+
+      // Game over
+      function gameOver() {
+        cancelAnimationFrame(draw);
+        isGameOver = true;
+
+        // Display the "Game Over" text
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText("Game Over", canvas.width / 2 - 80, canvas.height / 2);
+
+        clearInterval(createEnemyInterval);
+        clearInterval(moveEnemyAndBulletInterval);
+        clearInterval(checkCollisionInterval);
+        document.removeEventListener("keydown", keyDownHandler);
+        document.removeEventListener("keyUp", keyUpHandler);
+        console.log("Game Over");
+      }
+
+      // Start the game loop
+      draw();
+
+      // Enemy and bullet creation interval
+      createEnemyInterval = setInterval(() => {
+        createEnemy();
+      }, 2000);
+
+      moveEnemyAndBulletInterval = setInterval(() => {
+        moveBullets();
+        moveEnemies();
+        checkCollisions();
+      }, 10);
+
+      // Game over condition (example: player's aircraft is destroyed)
+      // You can adjust the condition based on your game's logic
+      checkCollisionInterval = setInterval(() => {
+        if (
+          enemies.some((enemy) =>
+            checkCollision(
+              { x: aircraftX, y: aircraftY, width: 50, height: 50 },
+              enemy
+            )
+          )
+        ) {
+          gameOver();
+        }
+      }, 100);
+    </script>
+  </body>
+</html>
