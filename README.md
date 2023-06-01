@@ -1,7 +1,7 @@
 # SimpleGame
 
-- Up, down, Right, Left arrows to move.
-- Space to fire bullets.
+- Up, down, Right, Left arrows to move your aircraft (Red Box).
+- Press Space to Fire Bullets to kill enemy (green box).
 
 View:
 
