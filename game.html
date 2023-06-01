@@ -10,14 +10,23 @@
     </style>
   </head>
   <body>
+    <div style="margin-top: 20px">
+      <b>How to Play:</b>
+      <ul>
+        <li>
+          Press Up, Down, Right, Left arrows to move your aircraft (Red Box).
+        </li>
+        <li>Press Space to Fire Bullets to kill enemy (Green box).</li>
+      </ul>
+    </div>
+    <div style="margin: 5px 0">
+      <button id="reload">Reload</button>
+    </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
 
     <script>
-      // Create reload button
-      const reloadButton = document.createElement("button");
-      reloadButton.innerText = "Reload";
-      reloadButton.addEventListener("click", reloadGame);
-      document.body.appendChild(reloadButton);
+      //reload button
+      document.getElementById("reload").addEventListener("click", reloadGame);
 
       // Get the canvas element
       const canvas = document.getElementById("gameCanvas");
